@@ -1,0 +1,9 @@
+/bin
+/eclipse-bin
+/.classpath
+/lib
+/test-lib
+/dist
+/etc
+/dev-lib
+.DS_Store

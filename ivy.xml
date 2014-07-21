@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/maven">
+  <info organisation="${ivy.artifact.group}" module="${ivy.artifact.id}" revision="${project.revision}"/>
+
+  <configurations>
+    <conf name="runtime"/>
+    <conf name="default" extends="runtime"/>
+    <conf name="test" visibility="private"/>
+    <conf name="source"/>
+  </configurations>
+
+  <publications>
+    <artifact name="${ivy.artifact.id}" type="jar" conf="default"/>
+    <artifact name="${ivy.artifact.id}" m:classifier="sources" type="source" ext="jar" conf="source"/>
+  </publications>
+
+  <dependencies defaultconf="default->default">
+
+    <!--  testing dependencies -->
+    <dependency org="junit" name="junit" rev="4.4" conf="test->default"/>
+    <dependency org="org.hamcrest"          name="hamcrest-core"  rev="1.1"   conf="test->default"/>
+    <dependency org="org.hamcrest"          name="hamcrest-library"  rev="1.1"   conf="test->default"/>
+    <dependency org="org.mockito" name="mockito-all" rev="1.8.5" conf="test->default"/>
+    <dependency org="com.mockrunner" name="mockrunner-servlet" rev="0.3.7" conf="test->default"/>
+    <dependency org="com.mockrunner" name="mockrunner" rev="0.3.1" conf="test->default"/>
+
+    <exclude org="junit" conf="default,runtime,source"/>
+  </dependencies>
+</ivy-module>
