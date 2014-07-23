@@ -18,4 +18,18 @@
 	<import file="build-res/subfloor.xml"/>
 
   <target name="dist" depends="jar.main" />
+
+  <target name="generate.manifest" depends="init,set-build.id">
+    <delete file="${dist.manifest.file}" />
+    <touch file="${dist.manifest.file}" />
+    <copy file="${manifest.file}" tofile="${dist.manifest.file}" overwrite="true" failonerror="false" />
+
+    <manifest file="${dist.manifest.file}" mode="update">
+      <attribute name="Implementation-Title" value="${impl.title}" />
+      <attribute name="Implementation-Version" value="${project.revision}.${build.id}" />
+      <attribute name="Implementation-Vendor" value="${impl.vendor}" />
+      <attribute name="Implementation-ProductID" value="${impl.productID}" />
+      <attribute name="Main-Class" value="${impl.main.class}" />
+    </manifest>
+  </target>
 </project>

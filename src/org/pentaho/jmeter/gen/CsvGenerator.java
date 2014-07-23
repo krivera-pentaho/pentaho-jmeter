@@ -9,7 +9,7 @@ import java.util.List;
 
 public class CsvGenerator implements FileGenerator {
 
-    public static final String EXT = ".csv";
+    public static final String BLANK_VALUE = "pen:ignore";
 
     @Override
     public File generateFile(String path, List<JMeterTest> annotations) {
@@ -19,29 +19,31 @@ public class CsvGenerator implements FileGenerator {
             genLine(annotation, result);
         }
 
-        String filePath = path + EXT;
-
         try {
-            PrintWriter out = new PrintWriter(path + EXT);
+            PrintWriter out = new PrintWriter(path);
             out.print(result);
             out.close();
 
-            return new File(filePath);
+            return new File(path);
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
 
     private void genLine(JMeterTest annotation, StringBuilder result) {
-        result.append(annotation.url());
+        result.append(getValue(annotation.url()));
         result.append(",");
-        result.append(annotation.requestType());
+        result.append(getValue(annotation.requestType()));
         result.append(",");
-        result.append(annotation.postData());
+        result.append(getValue(annotation.postData()));
         result.append(",");
-        result.append(annotation.statusCode());
+        result.append(getValue(annotation.statusCode()));
+        result.append(",");
+        result.append(getValue(annotation.result()));
         result.append("\n");
     }
 
-
+    private String getValue(String val) {
+        return (val == null || val.isEmpty()) ? BLANK_VALUE : val;
+    }
 }

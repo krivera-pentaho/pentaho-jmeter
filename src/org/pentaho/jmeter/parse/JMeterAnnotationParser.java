@@ -18,25 +18,30 @@ public class JMeterAnnotationParser {
         String path = packagePath.replace(".", "/");
         Enumeration<URL> packageResources = classLoader.getResources(path);
 
-        List<String> classNames = new ArrayList<String>();
 
         // Collect Classnames
         while(packageResources.hasMoreElements()) {
             URL packageResource = packageResources.nextElement();
 
             if (!packageResource.getFile().contains("jar!")) {
-                File dir = new File(packageResource.getFile());
-                scanDirectory(dir, packagePath, classNames);
+                parseDirectoryResources(packageResource.getFile(), results);
             }
         }
+    }
 
-        // Traverse the class names
+    public static void parseDirectoryResources(String rootDirPath, List<JMeterTest> results) throws FileNotFoundException, ClassNotFoundException {
+        List<String> classNames = new ArrayList<String>();
+
+        File rootDir = new File(rootDirPath);
+        scanDirectory(rootDir, "", classNames);
+
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         for (String className : classNames) {
             scanClass(className, classLoader, results);
         }
     }
 
-    private static void scanDirectory(File dir, String packagePath, List<String> result) throws ClassNotFoundException, FileNotFoundException {
+    public static void scanDirectory(File dir, String packagePath, List<String> result) throws ClassNotFoundException, FileNotFoundException {
         if (!dir.isDirectory()) {
             return;
         }
@@ -44,18 +49,18 @@ public class JMeterAnnotationParser {
         File[] files = dir.listFiles();
         for (File file : files) {
             if (file.isDirectory()) {
-                scanDirectory(file, packagePath + "." + file.getName(), result);
+                scanDirectory(file, packagePath + (packagePath.isEmpty() ? "" : ".") + file.getName(), result);
             }
 
             // Check to make sure it is a java class
             if (file.getName().contains(FILE_EXT)) {
-                String className = (packagePath + "." + file.getName()).replace(FILE_EXT, "");
+                String className = (packagePath +  "." + file.getName()).replace(FILE_EXT, "");
                 result.add(className);
             }
         }
     }
 
-    private static void scanClass(String className, ClassLoader classLoader, List<JMeterTest> results) throws ClassNotFoundException, FileNotFoundException {
+    public static void scanClass(String className, ClassLoader classLoader, List<JMeterTest> results) throws ClassNotFoundException, FileNotFoundException {
         Method[] methods = classLoader.loadClass(className).getMethods();
         for (Method method : methods) {
             scanAnnotation(method, results);
@@ -63,7 +68,7 @@ public class JMeterAnnotationParser {
     }
 
 
-    private static void scanAnnotation(Method method, List<JMeterTest> results) {
+    public static void scanAnnotation(Method method, List<JMeterTest> results) {
         if (!method.isAnnotationPresent(JMeterTest.class)) {
             return;
         }

@@ -5,12 +5,13 @@ import org.pentaho.jmeter.gen.CsvGenerator;
 import org.pentaho.jmeter.gen.FileGenerator;
 import org.pentaho.jmeter.parse.JMeterAnnotationParser;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
 
-    public static final String ERROR_INSUFFICIENT_ARGS = "Insufficient arguments detected.\n\targ0=base package, " +
+    public static final String ERROR_INSUFFICIENT_ARGS = "Insufficient arguments detected.\n\targ0=classes directory, " +
             "arg1=path and filename";
     public static final String ERROR_UNKNOWN_EXT = "Unknown file extension";
     public static final String MESSAGE_NO_ANNOTATIONS = "No annotations detected in package ";
@@ -23,13 +24,14 @@ public class Main {
         execute(args[0], args[1]);
     }
 
-    public static void execute(String packagePath, String filePath) throws Exception {
+    public static void execute(String scanDirPath, String filePath) throws Exception {
         List<JMeterTest> results = new ArrayList<JMeterTest>();
-        JMeterAnnotationParser.scanPackage(packagePath, results);
+
+        JMeterAnnotationParser.parseDirectoryResources(scanDirPath, results);
 
         if (results.size() == 0) {
             System.out.print(MESSAGE_NO_ANNOTATIONS);
-            System.out.println(packagePath);
+            System.out.println(scanDirPath);
             return;
         }
 
