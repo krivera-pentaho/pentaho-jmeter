@@ -13,7 +13,7 @@ public class JMeterAnnotationParser {
 
     public static final String FILE_EXT = ".class";
 
-    public static void scanPackage(String packagePath, List<JMeterTest> results) throws IOException, ClassNotFoundException {
+    public void scanPackage(String packagePath, List<JMeterTest> results) throws IOException, ClassNotFoundException {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         String path = packagePath.replace(".", "/");
         Enumeration<URL> packageResources = classLoader.getResources(path);
@@ -29,7 +29,7 @@ public class JMeterAnnotationParser {
         }
     }
 
-    public static void parseDirectoryResources(String rootDirPath, List<JMeterTest> results) throws FileNotFoundException, ClassNotFoundException {
+    public void parseDirectoryResources(String rootDirPath, List<JMeterTest> results) throws FileNotFoundException, ClassNotFoundException {
         List<String> classNames = new ArrayList<String>();
 
         File rootDir = new File(rootDirPath);
@@ -41,7 +41,7 @@ public class JMeterAnnotationParser {
         }
     }
 
-    public static void scanDirectory(File dir, String packagePath, List<String> result) throws ClassNotFoundException, FileNotFoundException {
+    private void scanDirectory(File dir, String packagePath, List<String> result) throws ClassNotFoundException, FileNotFoundException {
         if (!dir.isDirectory()) {
             return;
         }
@@ -60,7 +60,7 @@ public class JMeterAnnotationParser {
         }
     }
 
-    public static void scanClass(String className, ClassLoader classLoader, List<JMeterTest> results) throws ClassNotFoundException, FileNotFoundException {
+    public void scanClass(String className, ClassLoader classLoader, List<JMeterTest> results) throws ClassNotFoundException, FileNotFoundException {
         Method[] methods = classLoader.loadClass(className).getMethods();
         for (Method method : methods) {
             scanAnnotation(method, results);
@@ -68,7 +68,7 @@ public class JMeterAnnotationParser {
     }
 
 
-    public static void scanAnnotation(Method method, List<JMeterTest> results) {
+    public void scanAnnotation(Method method, List<JMeterTest> results) {
         if (!method.isAnnotationPresent(JMeterTest.class)) {
             return;
         }
