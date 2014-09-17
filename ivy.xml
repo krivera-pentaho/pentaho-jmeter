@@ -16,8 +16,6 @@
 
   <dependencies defaultconf="default->default">
 
-    <dependency org="org.apache.jmeter" name="ApacheJMeter_parent" rev="2.6" conf="default"/>
-
     <!--  testing dependencies -->
     <dependency org="junit" name="junit" rev="4.4" conf="test->default"/>
     <dependency org="org.hamcrest" name="hamcrest-core" rev="1.1" conf="test->default"/>
@@ -27,8 +25,6 @@
 
     <dependency org="com.mockrunner" name="mockrunner-servlet" rev="0.3.7" conf="test->default"/>
     <dependency org="com.mockrunner" name="mockrunner" rev="0.3.1" conf="test->default"/>
-
-    <dependency org="org.powermock" name="powermock-api-mockito" rev="1.5.1" conf="test->default"/>
 
     <exclude org="junit" conf="default,runtime,source"/>
   </dependencies>
