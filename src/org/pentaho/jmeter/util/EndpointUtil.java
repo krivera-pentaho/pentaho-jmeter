@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 
 public class EndpointUtil {
 
-  public static <T extends Annotation> boolean compareCommentsAndAnnotations( String scanDirPath,
+  public static <T extends Annotation> boolean compareCommentsAndAnnotations( String scanDirPath, String baseUrl,
                                                                               Class<T> annotationClass )
     throws Exception {
     /*
@@ -79,7 +79,7 @@ public class EndpointUtil {
       for ( T annotation : annotations.keySet() ) {
         String urlBase = annotation == null ? "" : getValue( annotation );
         urlBase = urlBase.endsWith( "/" ) ? urlBase.substring( 0, urlBase.length() - 1 ) : urlBase;
-        urlBase = "pentaho/api" + ( urlBase.startsWith( "/" ) ? "" : "/" ) + urlBase;
+        urlBase = baseUrl + ( urlBase.startsWith( "/" ) || urlBase.isEmpty() ? "" : "/" ) + urlBase;
 
         baseUrls.put( className, urlBase );
 
