@@ -30,7 +30,11 @@ public class CommentParser extends Parser {
     List<File> files = new ArrayList<File>();
 
     // Get java files in director
-    scanDirectoryForFiles( rootDir, files, EXT );
+    if ( rootDir.isDirectory() ) {
+      scanDirectoryForFiles( rootDir, files, EXT );
+    } else {
+      files.add( rootDir );
+    }
 
     for ( File file : files ) {
       Scanner scanner = new Scanner( file );
@@ -57,7 +61,7 @@ public class CommentParser extends Parser {
   }
 
   public interface MatcherHandler {
-    public void handleResult( String clasName, Matcher m );
+    public void handleResult( String className, Matcher m );
   }
 
 }

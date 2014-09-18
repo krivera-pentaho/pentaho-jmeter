@@ -61,6 +61,8 @@ public class EndpointUtil {
       }
     } );
 
+    StringBuffer exceptions = new StringBuffer();
+
     /*
      * Parse annotations
      */
@@ -145,10 +147,23 @@ public class EndpointUtil {
         pathRegex += ".*";
 
         if ( !Pattern.compile( pathRegex ).matcher( exampleUrl ).matches() ) {
-          throw new RuntimeException(
-            "'" + className + ":" + methodName + "' " + exampleUrl + " does not match path " + path );
+          if ( exceptions.length() > 0 ) {
+            exceptions.append( "\n" );
+          }
+          exceptions.append( "'" );
+          exceptions.append( className );
+          exceptions.append( ":" );
+          exceptions.append( methodName );
+          exceptions.append( "' " );
+          exceptions.append( exampleUrl );
+          exceptions.append( " does not match path " );
+          exceptions.append( path );
         }
       }
+    }
+
+    if ( exceptions.length() > 0 ) {
+      throw new RuntimeException( exceptions.toString() );
     }
 
     return true;
