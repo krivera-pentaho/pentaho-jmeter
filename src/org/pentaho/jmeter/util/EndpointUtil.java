@@ -137,6 +137,9 @@ public class EndpointUtil {
           return false;
         }
 
+        /*
+         Replace { var : regex } with just the regex
+         */
         String path = (String) methodRegex[ 1 ];
         Matcher m = Pattern.compile( "\\{.+?:(.+?)\\}" ).matcher( path );
 
@@ -144,6 +147,15 @@ public class EndpointUtil {
         while ( m.find() ) {
           pathRegex = path.replace( m.group(), m.group( 1 ).trim() + "?" );
         }
+
+        /*
+         Replace { var } with .*?
+         */
+        m = Pattern.compile( "\\{.+?\\}" ).matcher( pathRegex );
+        while ( m.find() ) {
+          pathRegex = pathRegex.replace( m.group(), ".*?" );
+        }
+
         pathRegex += ".*";
 
         if ( !Pattern.compile( pathRegex ).matcher( exampleUrl ).matches() ) {
