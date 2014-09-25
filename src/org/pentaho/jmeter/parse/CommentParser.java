@@ -24,14 +24,14 @@ import java.util.regex.Pattern;
 public class CommentParser extends Parser {
   protected static final String EXT = ".java";
 
-  public void parseRegEx( String rootDirPath, String contentContains, String exp, MatcherHandler handler )
+  public void parseRegEx( String rootDirPath, String contentContains, String exp, MatcherHandler handler, String... excludePaths )
     throws FileNotFoundException, ClassNotFoundException {
     File rootDir = getFile( rootDirPath );
     List<File> files = new ArrayList<File>();
 
     // Get java files in director
     if ( rootDir.isDirectory() ) {
-      scanDirectoryForFiles( rootDir, files, EXT );
+      scanDirectoryForFiles( rootDir, files, EXT, excludePaths );
     } else {
       files.add( rootDir );
     }

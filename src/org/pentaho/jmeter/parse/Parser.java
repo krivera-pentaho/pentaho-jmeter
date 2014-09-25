@@ -40,21 +40,31 @@ public class Parser {
     }
   }
 
-  protected void scanDirectoryForFiles( File dir, List<File> result, String fileExt ) {
+  protected void scanDirectoryForFiles( File dir, List<File> result, String fileExt, String... excludePaths ) {
     if ( !dir.isDirectory() ) {
       return;
     }
 
     File[] files = dir.listFiles();
     for ( File file : files ) {
-      if ( file.isDirectory() ) {
+      if ( file.isDirectory() && !pathInExcludes( file.getAbsolutePath(), excludePaths ) ) {
         scanDirectoryForFiles( file, result, fileExt );
       }
 
-      if ( file.getName().contains( fileExt ) ) {
+      if ( file.getName().contains( fileExt ) && !pathInExcludes( file.getAbsolutePath(), excludePaths ) ) {
         result.add( file );
       }
     }
+  }
+
+  protected boolean pathInExcludes( String path, String... excludePaths ) {
+    for ( String excludePath : excludePaths ) {
+      if ( path.equals( excludePath ) ) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   protected File getFile( String path ) {
