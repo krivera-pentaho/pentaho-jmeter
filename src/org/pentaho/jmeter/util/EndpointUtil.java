@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 public class EndpointUtil {
 
   public static <T extends Annotation> boolean compareCommentsAndAnnotations( String scanDirPath, String baseUrl,
-                                                                              Class<T> annotationClass )
+                                                                              Class<T> annotationClass, String... excludePaths )
     throws Exception {
     /*
      * Retrieve comments
@@ -59,7 +59,7 @@ public class EndpointUtil {
           m.group( 2 )  // Request URL
         } );
       }
-    } );
+    }, excludePaths );
 
     StringBuffer exceptions = new StringBuffer();
 
