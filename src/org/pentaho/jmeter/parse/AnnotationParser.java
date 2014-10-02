@@ -71,7 +71,7 @@ public class AnnotationParser extends Parser {
     throws ClassNotFoundException, FileNotFoundException {
     Class<?> clazz = getClassLoader().loadClass( className );
 
-    T classAnnotation = scanAnnotaion( clazz, annotationClass );
+    T classAnnotation = scanAnnotation( clazz, annotationClass );
     if ( results.get( classAnnotation ) == null ) {
       results.put( classAnnotation, new HashMap<Method, T>() );
     }
@@ -97,7 +97,7 @@ public class AnnotationParser extends Parser {
     }
   }
 
-  public <T extends Annotation> T scanAnnotaion( Class<?> clazz, Class<T> annotationClass ) {
+  public <T extends Annotation> T scanAnnotation( Class<?> clazz, Class<T> annotationClass ) {
     if ( !clazz.isAnnotationPresent( annotationClass ) ) {
       return null;
     }

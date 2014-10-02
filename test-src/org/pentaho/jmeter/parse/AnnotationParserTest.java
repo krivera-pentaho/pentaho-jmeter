@@ -13,102 +13,166 @@
 
 package org.pentaho.jmeter.parse;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import java.io.File;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.mockito.Mockito.*;
 
 public class AnnotationParserTest {
 
   AnnotationParser parser;
+  Class<Test> testClass = Test.class;
 
   @Before
   public void setUp() {
     parser = spy( new AnnotationParser() );
   }
 
-  @After
-  public void tearDown() {
-    parser = null;
-  }
-
   @Test
   public void testScanPackage() throws Exception {
+    String packagePath = "package.path";
+    List<Test> mockResults = mock( List.class );
+
     ClassLoader mockClassLoader = mock( ClassLoader.class );
     doReturn( mockClassLoader ).when( parser ).getClassLoader();
 
-    String packagePath = "package.path.replace.me";
-    String resultingPackagePath = "package/path/replace/me";
+    Enumeration<URL> mockEnum = mock( Enumeration.class );
+    doReturn( mockEnum ).when( mockClassLoader ).getResources( packagePath.replace( ".", "/" ) );
 
-    String urlStr = "test.class";
-    AnnotationParser.URLWrapper mockUrlWrapper = mock( AnnotationParser.URLWrapper.class );
-    doReturn( urlStr ).when( mockUrlWrapper ).getFile();
+    final Map<String, Boolean> hasMoreElementsMap = new HashMap<String, Boolean>();
 
-    doReturn( mockUrlWrapper ).when( parser ).getURLWrapper( any( URL.class ) );
+    final String key = "hasMoreElements";
+    hasMoreElementsMap.put( key, true );
 
-    Enumeration<URL> mockUrls = mock( Enumeration.class );
-
-    final List<Object> calls = new ArrayList<Object>();
-    calls.add( mock( Object.class ) );
+    final AnnotationParser.URLWrapper mockUrlWrapper = mock( AnnotationParser.URLWrapper.class );
+    doAnswer( new Answer() {
+      @Override public Object answer( InvocationOnMock invocation ) throws Throwable {
+        hasMoreElementsMap.put( key, false );
+        return mockUrlWrapper;
+      }
+    } ).when( parser ).getURLWrapper( any( URL.class ) );
 
     doAnswer( new Answer() {
       @Override public Object answer( InvocationOnMock invocation ) throws Throwable {
-        boolean hasMore = !calls.isEmpty();
-        if ( hasMore ) {
-          calls.remove( calls.size() - 1 );
-        }
-
-        return hasMore;
+        return hasMoreElementsMap.get( key );
       }
-    } ).when( mockUrls ).hasMoreElements();
+    } ).when( mockEnum ).hasMoreElements();
 
-    doReturn( mockUrls ).when( mockClassLoader ).getResources( resultingPackagePath );
 
-    //    List<JMeterTest> results = null;
-    //
-    //    doNothing().when( parser ).parseDirectoryResources( eq( urlStr ), eq( results ), eq( JMeterTest.class ) );
-    //
-    //    parser.scanPackage( packagePath, results, JMeterTest.class );
-    //
-    //    verify( parser, times( 1 ) ).getClassLoader();
-    //    verify( mockClassLoader, times( 1 ) ).getResources( eq( resultingPackagePath ) );
-    //    verify( mockUrls, times( 2 ) ).hasMoreElements();
-    //    verify( mockUrls, times( 1 ) ).nextElement();
-    //    verify( parser, times( 1 ) ).parseDirectoryResources( eq( urlStr ), eq( results ), eq( JMeterTest.class ) );
+    String resourceFile = "test";
+    doReturn( resourceFile ).when( mockUrlWrapper ).getFile();
+
+    doNothing().when( parser ).parseDirectoryResources( resourceFile, mockResults, testClass );
+
+    parser.scanPackage( packagePath, mockResults, testClass );
+
+    verify( parser, times( 1 ) ).getClassLoader();
+    verify( mockClassLoader, times( 1 ) ).getResources( packagePath.replace( ".", "/" ) );
+    verify( mockEnum, times( 2 ) ).hasMoreElements();
+    verify( parser, times( 1 ) ).getURLWrapper( any( URL.class ) );
+    verify( mockUrlWrapper, times( 2 ) ).getFile();
+    verify( parser, times( 1 ) ).parseDirectoryResources( resourceFile, mockResults, testClass );
   }
 
   @Test
   public void testParseDirectoryResources() throws Exception {
-    //    String rootPath = "rootPath";
-    //    List<JMeterTest> results = new ArrayList<JMeterTest>();
-    //    final List<String> classNames = new ArrayList<String>();
-    //    final String className = "className";
-    //
-    //    File mockFile = mock( File.class );
-    //    doReturn( mockFile ).when( parser ).getFile( rootPath );
+    String rootDirPath = "rootDirPath";
+    List<Test> mockResults = mock( List.class );
 
-    //    doAnswer( new Answer() {
-    //      @Override public Object answer( InvocationOnMock invocation ) throws Throwable {
-    //        classNames.add( className );
-    //        return null;
-    //      }
-    //    } ).when( parser ).scanDirectoryForClassname( eq( mockFile ), anyString(), eq( classNames ) );
-    //
-    //    doNothing().when( parser ).scanClass( eq( className ), eq( results ), eq( JMeterTest.class ) );
-    //
-    //    parser.parseDirectoryResources( rootPath, results, JMeterTest.class );
-    //
-    //    verify( parser, times( 1 ) ).getFile( rootPath );
-    //    verify( parser, times( 1 ) ).scanDirectoryForClassname( eq( mockFile ), anyString(), eq( classNames ) );
-    //    verify( parser, times( 1 ) ).scanClass( eq( className ), eq( results ), eq( JMeterTest.class ) );
+    File mockFile = mock( File.class );
+    doReturn( mockFile ).when( parser ).getFile( rootDirPath );
 
+    final String className = "class.Name";
+    doAnswer( new Answer() {
+      @Override public Object answer( InvocationOnMock invocation ) throws Throwable {
+        List<String> classNames = (List<String>) invocation.getArguments()[ 2 ];
+        classNames.add( className );
+        return null;
+      }
+    } ).when( parser )
+      .scanDirectoryForClassname( any( File.class ), eq( "" ), anyList(), eq( AnnotationParser.FILE_EXT ) );
+
+    final Test annotation = mock( testClass );
+    doAnswer( new Answer() {
+      @Override public Object answer( InvocationOnMock invocation ) throws Throwable {
+        Map<Test, Map<Method, Test>> map = (Map<Test, Map<Method, Test>>) invocation.getArguments()[ 1 ];
+        map.put( annotation, new HashMap<Method, Test>() );
+        return null;
+      }
+    } ).when( parser ).scanClass( eq( className ), anyMap(), eq( testClass ) );
+
+    parser.parseDirectoryResources( rootDirPath, mockResults, testClass );
+
+    verify( parser, times( 1 ) ).getFile( rootDirPath );
+    verify( parser, times( 1 ) ).scanDirectoryForClassname( any( File.class ), eq( "" ), anyList(),
+      eq( AnnotationParser.FILE_EXT ) );
+    verify( parser, times( 1 ) ).scanClass( eq( className ), anyMap(), eq( testClass ) );
+    verify( mockResults ).add( annotation );
   }
+
+  @Test
+  public void testScanClass() throws Exception {
+    String className = "className";
+    final Map<Test, Map<Method, Test>> mockResults = mock( Map.class );
+
+    ClassLoader mockClassLoader = mock( ClassLoader.class );
+    doReturn( mockClassLoader ).when( parser ).getClassLoader();
+
+    Class clazz = this.getClass();
+    doReturn( clazz ).when( mockClassLoader ).loadClass( className );
+
+    final Test mockTestClassAnnotation = mock( testClass );
+    doReturn( mockTestClassAnnotation ).when( parser ).scanAnnotation( clazz, testClass );
+
+    final Map<Method, Test> mockMap = mock( Map.class );
+    doAnswer( new Answer() {
+      @Override public Object answer( InvocationOnMock invocation ) throws Throwable {
+        doReturn( mockMap ).when( mockResults ).get( mockTestClassAnnotation );
+        return null;
+      }
+    } ).when( mockResults ).get( mockTestClassAnnotation );
+
+    Method method = this.getClass().getMethods()[ 0 ];
+
+    Test mockTestMethodAnnotation = mock( testClass );
+    doReturn( mockTestMethodAnnotation ).when( parser ).scanAnnotation( method, testClass );
+
+    parser.scanClass( className, mockResults, testClass );
+
+    verify( mockResults, times( 1 ) ).put( eq( mockTestClassAnnotation ), anyMap() );
+    verify( mockMap, times( 1 ) ).put( method, mockTestMethodAnnotation );
+    verify( parser, times( 1 ) ).getClassLoader();
+    verify( mockClassLoader, times( 1 ) ).loadClass( className );
+    verify( parser, times( 1 ) ).scanAnnotation( clazz, testClass );
+    verify( mockResults, times( 2 ) ).get( mockTestClassAnnotation );
+    verify( parser, times( 1 ) ).scanAnnotation( method, testClass );
+  }
+
+  @Test
+  public void testScanMethods() throws Exception {
+    Class clazz = this.getClass();
+    Map<Method, Test> mockResults = mock( Map.class );
+
+    Method thisTestMethod = this.getClass().getMethod( "testScanMethods" );
+
+    Test mockMethodAnnotation = mock( testClass );
+    doReturn( mockMethodAnnotation ).when( parser ).scanAnnotation( thisTestMethod, testClass );
+
+    parser.scanMethods( clazz, mockResults, testClass );
+
+    verify( mockResults, times( 1 ) ).put( thisTestMethod, mockMethodAnnotation );
+    verify( parser, times( 1 ) ).scanAnnotation( thisTestMethod, testClass );
+  }
+
 }

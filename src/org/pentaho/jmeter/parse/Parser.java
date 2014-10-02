@@ -30,6 +30,7 @@ public class Parser {
       if ( file.isDirectory() ) {
         scanDirectoryForClassname( file, packagePath + ( packagePath.isEmpty() ? "" : "." ) + file.getName(), result,
           fileExt );
+        return;
       }
 
       // Check to make sure it is a java class
@@ -49,6 +50,7 @@ public class Parser {
     for ( File file : files ) {
       if ( file.isDirectory() && !pathInExcludes( file.getAbsolutePath(), excludePaths ) ) {
         scanDirectoryForFiles( file, result, fileExt );
+        return;
       }
 
       if ( file.getName().contains( fileExt ) && !pathInExcludes( file.getAbsolutePath(), excludePaths ) ) {
